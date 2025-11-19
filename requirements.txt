@@ -1,0 +1,8 @@
+pandas>=1.5.0
+numpy>=1.23.0
+scikit-learn>=1.2.0
+scipy>=1.9.0
+lime>=0.2.0
+shap>=0.42.0
+matplotlib>=3.5.0
+reportlab>=3.6.0

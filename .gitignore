@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+*.egg-info/
+*.egg
+
+# Generated artifacts
+artifacts/
+*.pkl
+*.pdf
+*.png
+*.jpg
+*.jpeg
+
+# Logs
+logs/
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Generated reports
+compliance_report.pdf
+*.docx
+
+# Data (uncomment if dataset is too large for GitHub)
+# dataset/ai4i2020.csv
