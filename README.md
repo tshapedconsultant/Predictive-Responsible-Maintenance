@@ -64,6 +64,14 @@ The pipeline is designed with Responsible AI principles in mind, ensuring transp
 - **Model Documentation**: Complete model documentation with feature importance
 - **Audit Trail**: All artifacts saved for regulatory compliance
 
+### Monitoring Dashboard
+- **Real-time Monitoring**: Interactive Streamlit dashboard for model health
+- **Performance Metrics**: Visual display of accuracy, precision, recall, F1 score
+- **Drift Visualization**: Interactive charts showing drift detection results
+- **Fairness Dashboard**: Visual comparison of performance across machine types
+- **Feature Importance**: Interactive charts for model and SHAP feature importance
+- **System Health**: Real-time status of model, explainability, drift, and fairness
+
 ## 🚀 Installation
 
 ### Prerequisites
@@ -125,6 +133,20 @@ python ml_pipeline.py
 python make_compliance_report.py
 ```
 
+**Launch Monitoring Dashboard:**
+```bash
+streamlit run dashboard.py
+```
+
+The dashboard provides real-time monitoring of:
+- Model performance metrics
+- Data drift detection
+- Fairness analysis by machine type
+- Feature importance visualizations
+- System health status
+
+Access the dashboard at: `http://localhost:8501`
+
 ## 📁 Project Structure
 
 ```
@@ -133,6 +155,7 @@ predictive-manteiance/
 ├── ml_pipeline.py              # Main ML pipeline script
 ├── make_compliance_report.py   # Compliance report generator
 ├── run_pipeline.py             # Entry point for complete pipeline
+├── dashboard.py                # Streamlit monitoring dashboard
 ├── requirements.txt            # Python dependencies
 ├── README.md                   # This file
 │
@@ -566,6 +589,62 @@ Contributions are welcome! Please follow these guidelines:
 - Add unit tests for new functions
 - Ensure all tests pass: `pytest tests/`
 - Maintain or improve test coverage
+
+## 📚 Documentation
+
+### Available Documentation
+
+This project includes comprehensive documentation for Responsible AI practices in predictive maintenance:
+
+1. **README.md** (This file)
+   - Complete project overview and usage guide
+   - Installation and setup instructions
+   - Model architecture and feature engineering details
+   - Testing and troubleshooting guides
+
+2. **COMPLIANCE_REPORTING.md**
+   - Detailed guide to compliance reporting system
+   - Report structure and sections explained
+   - Compliance standards (EU AI Act, GDPR, ISO/IEC 23053)
+   - Customization and troubleshooting
+
+3. **DASHBOARD_GUIDE.md**
+   - Monitoring dashboard usage guide
+   - Feature descriptions and usage tips
+   - Customization instructions
+   - Troubleshooting guide
+
+4. **Responsible AI for Predictive Maintenance PDF**
+   - Comprehensive guide on Responsible AI principles
+   - Best practices for predictive maintenance systems
+   - Compliance frameworks and regulatory requirements
+   - Implementation guidelines
+   
+   **Location**: `Responsible AI for Predictive Maintenance_ A Compl... .pdf`
+
+5. **Generated Compliance Reports**
+   - `compliance_report.pdf` - Automated Responsible AI compliance report
+   - Generated after running the ML pipeline
+   - Includes model performance, fairness analysis, drift detection, and explainability
+
+### Documentation Structure
+
+```
+predictive-manteiance/
+├── README.md                              # Main project documentation
+├── COMPLIANCE_REPORTING.md                # Compliance reporting guide
+├── DASHBOARD_GUIDE.md                     # Monitoring dashboard guide
+├── Responsible AI for Predictive Maintenance_ A Compl... .pdf  # Responsible AI guide
+├── compliance_report.pdf                  # Generated compliance report
+└── Predictive_Maintenance_System_Guide.docx  # System guide (Word format)
+```
+
+### Quick Links
+
+- **Getting Started**: See [Installation](#-installation) and [Quick Start](#-quick-start)
+- **Compliance**: See [Compliance Reporting](#-compliance-reporting) section
+- **Monitoring**: See [Monitoring Dashboard](#monitoring-dashboard) section
+- **Testing**: See [Testing](#-testing) section
 
 ## 📝 License
 
