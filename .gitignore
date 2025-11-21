@@ -4,24 +4,27 @@ __pycache__/
 *$py.class
 *.so
 .Python
-env/
-venv/
-ENV/
 build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
 *.egg-info/
+.installed.cfg
 *.egg
 
-# Generated artifacts
-artifacts/
-*.pkl
-*.pdf
-*.png
-*.jpg
-*.jpeg
-
-# Logs
-logs/
-*.log
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
 
 # IDE
 .vscode/
@@ -30,22 +33,37 @@ logs/
 *.swo
 *~
 
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# Artifacts (keep structure, ignore content)
+artifacts/*.pkl
+artifacts/*.json
+artifacts/*.csv
+artifacts/*.png
+!artifacts/.gitkeep
+
+# Logs
+logs/*.csv
+logs/*.log
+!logs/.gitkeep
+
+# Compliance reports
+compliance_report.pdf
+
+# Test coverage
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
 # OS
 .DS_Store
 Thumbs.db
 
-# Jupyter Notebooks
-.ipynb_checkpoints/
-*.ipynb
-
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Generated reports
-compliance_report.pdf
-*.docx
-
-# Data (uncomment if dataset is too large for GitHub)
-# dataset/ai4i2020.csv
+# Dataset (if large, consider git-lfs)
+# dataset/*.csv
