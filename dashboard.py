@@ -396,6 +396,27 @@ def main():
         fig.update_layout(height=400, yaxis={'categoryorder': 'total ascending'})
         st.plotly_chart(fig, use_container_width=True)
     
+    # Graphviz Decision Tree Visualization (if available)
+    graphviz_png_path = ARTIFACTS / "model_decision_tree.png"
+    graphviz_dot_path = ARTIFACTS / "model_decision_tree.dot"
+    
+    if graphviz_png_path.exists() or graphviz_dot_path.exists():
+        st.subheader("🌳 Decision Tree Visualization (Graphviz)")
+        
+        if graphviz_png_path.exists():
+            st.image(str(graphviz_png_path), use_container_width=True)
+            st.caption(
+                "This decision tree visualization shows the decision paths and feature splits used by one "
+                "of the trees in the Random Forest ensemble. Each node shows the feature condition, "
+                "and the color intensity indicates the class distribution (blue for 'No Failure', "
+                "orange for 'Failure'). The tree depth is limited to 5 levels for readability."
+            )
+        else:
+            st.info(
+                "Decision tree DOT file available. PNG rendering requires Graphviz system binary installation. "
+                f"To generate PNG manually, run: dot -Tpng {graphviz_dot_path.name} -o model_decision_tree.png"
+            )
+    
     st.markdown("---")
     
     # ========================================================================

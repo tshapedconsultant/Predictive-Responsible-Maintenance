@@ -78,6 +78,21 @@ except ImportError:
     )
     logging.warning("Pipeline will continue without SHAP explanations")
 
+# Graphviz dependency - make it optional with graceful fallback
+# Graphviz for visualizing decision trees
+GRAPHVIZ_AVAILABLE = False
+try:
+    import graphviz  # Graphviz for decision tree visualization
+    from sklearn.tree import export_graphviz  # Export trees to DOT format
+    GRAPHVIZ_AVAILABLE = True
+    logging.info("✓ Graphviz library found - decision tree visualization enabled")
+except ImportError as e:
+    logging.warning(
+        f"⚠️  Graphviz library not found. Decision tree visualization will be disabled. "
+        f"To enable: pip install graphviz. Error: {e}"
+    )
+    logging.warning("Pipeline will continue without Graphviz visualizations")
+
 # Set up file paths and directories
 BASE_DIR = Path(__file__).parent  # Get the directory where this script is located
 ARTIFACTS = BASE_DIR / "artifacts"  # Folder to save all outputs (model, reports, etc.)
@@ -454,6 +469,106 @@ def calculate_custom_sample_weights(X_train, y_train, df_train):
     return custom_weights
 
 # ============================================================================
+# GRAPHVIZ DECISION TREE EXPORT
+# ============================================================================
+def export_decision_tree_graphviz(model, feature_names, X_train, max_depth=5, tree_index=0):
+    """
+    Export a decision tree from the Random Forest to Graphviz DOT format.
+    
+    This function visualizes one of the decision trees in the Random Forest ensemble,
+    showing the decision paths and feature splits that the model uses for predictions.
+    
+    Parameters:
+        model: Trained Random Forest model
+        feature_names: List of feature names
+        X_train: Training data (for determining feature ranges)
+        max_depth: Maximum depth of tree to visualize (default: 5 for readability)
+        tree_index: Index of tree to export (default: 0, first tree)
+    
+    Returns:
+        Path to generated DOT and PNG files, or None if error
+    """
+    if not GRAPHVIZ_AVAILABLE:
+        logging.warning("Graphviz not available - skipping decision tree export")
+        return None
+    
+    try:
+        # Get the specified tree from the Random Forest
+        tree = model.estimators_[tree_index]
+        
+        # Export to DOT format
+        dot_data = export_graphviz(
+            tree,
+            out_file=None,
+            feature_names=feature_names,
+            class_names=['No Failure', 'Failure'],
+            filled=True,
+            rounded=True,
+            special_characters=True,
+            max_depth=max_depth,
+            impurity=True,
+            proportion=True
+        )
+        
+        # Create Graphviz source object
+        graph = graphviz.Source(dot_data)
+        
+        # Save DOT file
+        dot_path = ARTIFACTS / "model_decision_tree.dot"
+        graph.save(str(dot_path))
+        logging.info(f"✓ Decision tree DOT file saved: {dot_path.name}")
+        
+        # Try to render PNG (requires Graphviz system installation)
+        try:
+            png_path = ARTIFACTS / "model_decision_tree.png"
+            graph.render(
+                filename=str(ARTIFACTS / "model_decision_tree"),
+                format='png',
+                cleanup=True  # Remove intermediate files
+            )
+            logging.info(f"✓ Decision tree PNG rendered: {png_path.name}")
+            return dot_path, png_path
+        except Exception as render_error:
+            # Graphviz system binary not installed - try matplotlib fallback
+            logging.warning(
+                f"Graphviz system binary not available: {render_error}. "
+                f"Attempting matplotlib fallback..."
+            )
+            try:
+                # Fallback: Use matplotlib to create tree visualization
+                import matplotlib.pyplot as plt
+                from sklearn.tree import plot_tree
+                
+                png_path = ARTIFACTS / "model_decision_tree.png"
+                fig, ax = plt.subplots(figsize=(20, 10))
+                plot_tree(
+                    tree,
+                    feature_names=feature_names,
+                    class_names=['No Failure', 'Failure'],
+                    filled=True,
+                    rounded=True,
+                    max_depth=max_depth,
+                    ax=ax,
+                    fontsize=8
+                )
+                plt.tight_layout()
+                plt.savefig(png_path, dpi=150, bbox_inches='tight')
+                plt.close()
+                logging.info(f"✓ Decision tree PNG rendered using matplotlib: {png_path.name}")
+                return dot_path, png_path
+            except Exception as matplotlib_error:
+                # Both methods failed
+                logging.warning(
+                    f"Could not render PNG with matplotlib either: {matplotlib_error}. "
+                    f"DOT file saved at {dot_path.name} - can be rendered manually with: dot -Tpng {dot_path.name} -o output.png"
+                )
+                return dot_path, None
+            
+    except Exception as e:
+        logging.error(f"Error exporting decision tree: {e}")
+        return None
+
+# ============================================================================
 # MODEL TRAINING
 # ============================================================================
 def train_random_forest(X, y, df=None, use_custom_weights=False):
@@ -659,6 +774,16 @@ def train_random_forest(X, y, df=None, use_custom_weights=False):
         except Exception as e:
             logging.error(f"Error saving metrics: {e}")
             raise
+        
+        # ====================================================================
+        # EXPORT DECISION TREE VISUALIZATION (GRAPHVIZ)
+        # ====================================================================
+        if GRAPHVIZ_AVAILABLE:
+            try:
+                export_decision_tree_graphviz(rf_model, X_train.columns, X_train)
+                logging.info("✓ Decision tree visualization exported")
+            except Exception as e:
+                logging.warning(f"Could not export decision tree visualization: {e}")
         
         return rf_model, X_train, X_test, y_train, y_test
     

@@ -720,11 +720,60 @@ def main():
         story.append(Paragraph("SHAP metadata not available.", styles["BodyText"]))
     story.append(Spacer(1, 12))
 
+    # Graphviz Decision Tree Visualization Section
+    story.append(Paragraph("<b>5c. Decision Tree Visualization (Graphviz)</b>", styles["Heading3"]))
+    graphviz_png_path = ARTIFACTS / "model_decision_tree.png"
+    graphviz_dot_path = ARTIFACTS / "model_decision_tree.dot"
+    
+    if graphviz_png_path.exists():
+        try:
+            # Add decision tree image
+            img = Image(str(graphviz_png_path), width=6*72, height=4*72)  # 6x4 inches
+            story.append(img)
+            story.append(Spacer(1, 6))
+            story.append(Paragraph(
+                "This decision tree visualization shows the decision paths and feature splits used by one "
+                "of the trees in the Random Forest ensemble. Each node shows the feature condition, "
+                "and the color intensity indicates the class distribution (blue for 'No Failure', "
+                "orange for 'Failure'). The tree depth is limited to 5 levels for readability.",
+                styles["BodyText"]
+            ))
+        except Exception as e:
+            logging.warning(f"Could not add Graphviz PNG to report: {e}")
+            story.append(Paragraph(
+                f"Decision tree PNG visualization available at: {graphviz_png_path.name}",
+                styles["BodyText"]
+            ))
+    elif graphviz_dot_path.exists():
+        story.append(Paragraph(
+            "Decision tree DOT file available. PNG rendering requires Graphviz system binary installation. "
+            f"DOT file location: {graphviz_dot_path.name}",
+            styles["BodyText"]
+        ))
+        story.append(Paragraph(
+            "To generate PNG manually, run: dot -Tpng model_decision_tree.dot -o model_decision_tree.png",
+            styles["BodyText"]
+        ))
+    else:
+        story.append(Paragraph(
+            "Decision tree visualization not available. Graphviz export may not have been generated during model training.",
+            styles["BodyText"]
+        ))
+    story.append(Spacer(1, 12))
+
     # Human Oversight Logs Section
     story.append(Paragraph("<b>6. Human Oversight Logs</b>", styles["Heading3"]))
     if not logs_df.empty:
+        story.append(Paragraph(
+            "<i>Note: The following is an example log for demonstration purposes. "
+            "In production, this section would contain actual human intervention records.</i>",
+            styles["BodyText"]
+        ))
+        story.append(Spacer(1, 6))
         story.append(Paragraph(f"Total logged decisions: {len(logs_df)}", styles["BodyText"]))
-        story.append(build_table_from_df(logs_df.tail(5)))  # Show last 5 entries
+        # Show all entries (limited to fit on PDF)
+        max_log_rows = min(3, len(logs_df))  # Show max 3 entries to fit on PDF
+        story.append(build_table_from_df(logs_df.head(max_log_rows)))
     else:
         story.append(Paragraph(
             "No logs available. (This is normal if no human interventions have occurred.)", 

@@ -135,7 +135,14 @@ python make_compliance_report.py
 
 **Launch Monitoring Dashboard:**
 ```bash
+# Option 1: Default port (8501)
 streamlit run dashboard.py
+
+# Option 2: Alternative port (if 8501 is busy)
+streamlit run dashboard.py --server.port 8502
+
+# Option 3: Use the batch file (Windows)
+start_dashboard.bat
 ```
 
 The dashboard provides real-time monitoring of:
@@ -144,8 +151,11 @@ The dashboard provides real-time monitoring of:
 - Fairness analysis by machine type
 - Feature importance visualizations
 - System health status
+- Graphviz decision tree visualization
 
-Access the dashboard at: `http://localhost:8501`
+**Access the dashboard at:** `http://localhost:8501` (or the port you specified)
+
+**Troubleshooting:** If the dashboard won't start, see `QUICK_START_DASHBOARD.md` for solutions.
 
 ## 📁 Project Structure
 
@@ -278,6 +288,22 @@ Tool_wear_Torque = Tool_wear [min] × Torque [Nm]
 OSF_risk = Tool_wear_Torque / OSF_threshold
 ```
 - Normalized stress level (0.0-1.0 = safe, >1.0 = at risk)
+
+### Physics-Based Feature Explanations
+
+The engineered features in this model are grounded in fundamental mechanical and thermal physics principles that govern industrial machinery behavior:
+
+**Temperature Difference (Heat Transfer Physics):**
+The temperature difference (`Temp_diff = Process_temp - Air_temp`) represents the thermal gradient driving heat dissipation from the machine to its environment. According to Newton's law of cooling, the rate of heat transfer is proportional to this temperature difference. When `Temp_diff < 8.6K` combined with low rotational speed, the machine cannot effectively dissipate heat through forced convection (airflow), leading to Heat Dissipation Failure (HDF). This follows the heat transfer equation: `Q = h·A·ΔT`, where heat flux (Q) depends on the temperature difference (ΔT), surface area (A), and heat transfer coefficient (h), which is reduced at low rotational speeds.
+
+**Power Calculation (Rotational Dynamics):**
+The power feature (`Power = Torque × Rotational_speed × 2π/60`) derives from fundamental rotational mechanics. Power in rotating systems is the product of torque (τ) and angular velocity (ω): `P = τ·ω`. The conversion factor `2π/60` transforms rpm to rad/s. Power failures occur when the system operates outside the safe operating window (3500W < P < 9000W), indicating either insufficient power delivery (underpowered operation) or excessive power demand (overload conditions), both of which violate the machine's design specifications and lead to Power Failure (PWF).
+
+**Tool Wear × Torque (Material Fatigue Physics):**
+The `Tool_wear_Torque` metric combines cumulative damage (tool wear) with applied stress (torque), following the principles of fatigue failure and cumulative damage theory (Miner's rule). As tools wear, their material properties degrade, reducing the maximum stress they can withstand. The product `Tool_wear × Torque` represents accumulated stress cycles, where each operating minute at a given torque level contributes to material fatigue. When this accumulated stress exceeds the material's endurance limit (thresholds: L=11,000, M=12,000, H=13,000 min·Nm), the material undergoes Overstrain Failure (OSF) due to progressive microcrack propagation and eventual fracture.
+
+**OSF Risk Score (Normalized Stress Analysis):**
+The OSF risk score normalizes the accumulated stress relative to the material's failure threshold, following the stress-life (S-N) curve relationship. Values < 1.0 indicate operation within the safe fatigue limit, while values > 1.0 indicate operation beyond the material's endurance limit, where failure becomes probable. This follows the relationship: `σ_applied / σ_endurance = risk_factor`, where exceeding unity indicates imminent failure.
 
 ### Performance Metrics
 - **Accuracy**: ~99.10% (test set)
@@ -441,6 +467,53 @@ The reports are designed to meet:
 - **`shap_summary_plot.png`**: SHAP summary plot (all features)
 - **`shap_summary_plot_custom.png`**: Custom SHAP plot (guaranteed all features)
 - **`shap_feature_importance.png`**: Feature importance bar chart
+
+### Human Oversight Logs
+- **`logs/alert_logs.csv`**: Human intervention and decision audit trail
+
+**Mock Log Example:**
+```csv
+timestamp,action,reason,model_prediction,human_decision
+2024-01-15 10:30:00,OVERRIDE,High confidence false positive detected,FAILURE,NO_FAILURE
+2024-01-15 11:15:23,APPROVED,Model prediction confirmed by maintenance team,FAILURE,FAILURE
+2024-01-15 14:42:10,OVERRIDE,Contextual information: recent maintenance performed,FAILURE,NO_FAILURE
+2024-01-16 09:20:45,APPROVED,SHAP explanation shows high Tool_wear_Torque risk,NO_FAILURE,FAILURE
+2024-01-16 15:33:12,APPROVED,Standard prediction within acceptable confidence range,NO_FAILURE,NO_FAILURE
+```
+
+The log tracks all human interventions where operators override or approve model predictions, providing a complete audit trail for regulatory compliance and model improvement.
+
+### Model Visualization (Graphviz)
+- **`model_decision_tree.dot`**: Graphviz DOT format file for visualizing Random Forest decision trees
+- **`model_decision_tree.png`**: Rendered decision tree visualization (if Graphviz is installed)
+
+**Graphviz Integration:**
+The pipeline can generate Graphviz DOT format files to visualize individual decision trees from the Random Forest ensemble. Graphviz uses the DOT language to create graph visualizations, allowing inspection of the decision paths and feature splits that the model uses for predictions. To generate visualizations:
+
+1. **Install Graphviz**: 
+   ```bash
+   # Windows (using Chocolatey)
+   choco install graphviz
+   
+   # macOS (using Homebrew)
+   brew install graphviz
+   
+   # Linux (Ubuntu/Debian)
+   sudo apt-get install graphviz
+   ```
+
+2. **Python Package**:
+   ```bash
+   pip install graphviz
+   ```
+
+3. **Generate Visualization**:
+   The pipeline can export individual trees in DOT format, which can be rendered using:
+   ```bash
+   dot -Tpng model_decision_tree.dot -o model_decision_tree.png
+   ```
+
+Graphviz visualizations help explain model decisions by showing the exact feature thresholds and decision paths that lead to failure predictions, enhancing model interpretability and compliance with explainability requirements.
 
 ### Compliance Report
 - **`compliance_report.pdf`**: Complete Responsible AI compliance report
