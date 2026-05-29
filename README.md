@@ -721,7 +721,7 @@ predictive-manteiance/
 
 ## 📝 License
 
-MIT License - see LICENSE file for details
+Copyright © 2024 **Andrés Lage** ([tshapedconsultant](https://github.com/tshapedconsultant)). Licensed under the **GNU General Public License v3.0 (GPL-3.0)** - see the [LICENSE](LICENSE) file for details. Unlike MIT, GPL-3.0 requires derivative works to be distributed under the same license with source available.
 
 ## 🙏 Acknowledgments
 
